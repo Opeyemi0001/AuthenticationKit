@@ -33,8 +33,7 @@ export default function RootLayout({
         ></script>
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased data-new-gr-c-s-check-loaded="14.1220.0"
-        data-gr-ext-installed=""`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Toaster position="top-center" />
         <UserProvider>{children}</UserProvider>

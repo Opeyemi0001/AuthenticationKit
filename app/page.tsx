@@ -1,11 +1,25 @@
 "use client";
 
-import { useUserContext } from "@/context/userContext";
+import { useUserContext } from "@/context/UserContext";
+
 
 export default function Home() {
-  const user  = useUserContext();
-  console.log(user);
+  const {logoutUser} = useUserContext();
+  const name = "Rona";
   return (
-    <main></main>
+    <main className="py-[2rem] mx-[10rem]">
+      <header className="flex justify-center items-center">
+        <h1 className="text-[2rem]">
+          Hey there, <span className="text-red-600">{name}</span> welcome to your Next.js app.
+        </h1>
+        <div className="flex items-center gap-4">
+          <img src="" alt="" />
+
+          <button
+          onClick={logoutUser}
+          className="px-4 py-2 bg-red-600 text-white rounded-md"> Logout</button>
+        </div>
+      </header>
+    </main>
   );
 }
