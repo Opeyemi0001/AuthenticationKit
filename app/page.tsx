@@ -1,11 +1,21 @@
 "use client";
 import { useUserContext } from "@/context/UserContext";
 import useRedirect from "@/hooks/useUserRedirect";
-import { use, useState } from "react";
+import { useState } from "react";
+import ChangePasswordForm from "./Components/auth/ChangePasswordForm/ChangePasswordForm";
 
 export default function Home() {
   useRedirect("/login");
-  const { logoutUser, user, handleUserInput, userState, updateUser, emailVerification } = useUserContext();
+  const {
+    logoutUser,
+    user,
+    handleUserInput,
+    userState,
+    updateUser,
+    emailVerification,
+    allUsers,
+    deleteUser,
+  } = useUserContext();
   const { name, photo, isVeriified, bio } = user;
 
   // state
@@ -29,8 +39,10 @@ export default function Home() {
             className="w-[40px] h-[40px] rounded-full"
           />
           {isVeriified && (
-            <button className="px-4 py-2 bg-blue-500 text-white rounded-md"
-            onClick={emailVerification}>
+            <button
+              className="px-4 py-2 bg-blue-500 text-white rounded-md"
+              onClick={emailVerification}
+            >
               Verify Account
             </button>
           )}
@@ -67,17 +79,50 @@ export default function Home() {
                 defaultValue={bio}
                 className="px-4 py-3 border-[2px] rounded-md outline-[#2ECC71] text-gray-800"
                 onChange={(e) => handleUserInput("bio")(e)}
-                
               ></textarea>
             </div>
-            <button type="submit"
-            onClick={(e) => updateUser(e, { bio: userState.bio })}
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md">
-              Update
+            <button
+              type="submit"
+              onClick={(e) => updateUser(e, { bio: userState.bio })}
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md"
+            >
+              Update Bio
             </button>
           </form>
         )}
       </section>
+      <div className="mt-4 flex gap-8">
+        <div className="flex-1">
+          <ChangePasswordForm />
+        </div>
+        <div className="flex-1">
+          <ul>
+            {allUsers.map(
+              (user: any, i: number) =>
+                user.role !== "admin" && (
+                  <li
+                    key={i}
+                    className="mb-2 px-2 py-3 border grid gride-cols-4 items-center gap-8"
+                  >
+                    <img
+                      src={user.photo}
+                      alt={user.name}
+                      className="w-[40px]  h-[40px] rounded-full"
+                    />
+                    <p>{user.name}</p>
+                    <p>{user.bio}</p>
+                    <button
+                      className="bg-red-500 text-white p-2 rounded-md"
+                      onClick={() => deleteUser(user.id)}
+                    >
+                      Delete User
+                    </button>
+                  </li>
+                )
+            )}
+          </ul>
+        </div>
+      </div>
     </main>
   );
 }

@@ -12,11 +12,16 @@ import toast from "react-hot-toast";
 
 const UserContext = React.createContext();
 
+// set axios to include credientials with every request
+axios.defaults.withCredentials = true;
+
 export const UserContextProvider = ({ children }) => {
   const serverUrl = "http://localhost:8000";
 
   const router = useRouter();
+
   const [user, setUser] = useState({});
+  const [allUsers, setAllUsers] = useState([]);
   const [userState, setUserState] = useState({
     name: "",
     email: "",
@@ -199,7 +204,7 @@ export const UserContextProvider = ({ children }) => {
     }
   };
 
-  //verify user
+  //verify user/email
   const verifyUser = async (token) => {
     setLoading(true);
     try {
@@ -240,14 +245,74 @@ export const UserContextProvider = ({ children }) => {
 
       toast.success("Forgot password email sent successfully");
       setLoading(false);
-
-      
     } catch (error) {
       console.log("Error sending forgot password email", error);
       toast.error(error.response.data.message);
       setLoading(false);
     }
   };
+
+  // reset password
+  const resetPassword = async (token, password) => {
+    setLoading(true);
+    try {
+      const res = await axios.post(
+        `${serverUrl}/api/v1/reset-password/${token}`,
+        { password },
+        {
+          withCredentials: true, // send cookies to the server
+        }
+      );
+
+      toast.success("Password reset successfully");
+      setLoading(false);
+      // redirect to login page
+      router.push("/login");
+    } catch (error) {
+      console.log("Error resetting password", error);
+      toast.error(error.response.data.message);
+      setLoading(false);
+    }
+  };
+
+  // change password
+  const changePassword = async (currentPassword, newPassword) => {
+    setLoading(true);
+    try {
+      const res = await axios.patch(
+        `${serverUrl}/api/v1/change-password`,
+        { currentPassword, newPassword },
+        {
+          withCredentials: true, // send cookies to the server
+        }
+      );
+
+      toast.success("Password changed successfully");
+      setLoading(false);
+    } catch (error) {
+      console.log("Error changing password", error);
+      toast.error(error.response.data.message);
+      setLoading(false);
+    }
+  };
+
+
+  // admin routes
+  const getAllUsers = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${serverUrl}/api/v1/admin/users`, {
+        withCredentials: true, // send cookies to the server
+      });
+
+      setAllUsers(res.data);
+      setLoading(false);
+    } catch (error) {
+      console.log("Error getting all users", error);
+      setLoading(false);
+      toast.error(error.response.data.message);
+    }
+  }
 
   // dynamic form handler
   const handleUserInput = (name) => (e) => {
@@ -259,18 +324,43 @@ export const UserContextProvider = ({ children }) => {
     }));
   };
 
+  // delete user
+  const deleteUser = async (id) => {
+    setLoading(true);
+    try {
+      const res = await axios.delete(`${serverUrl}/api/v1/admin/users/${id}`, {
+        withCredentials: true, // send cookies to the server
+      });
+
+      toast.success("User deleted successfully");
+      setLoading(false);
+
+      // refresh the users list
+      getAllUsers();
+    } catch (error) {
+      console.log("Error deleting user", error);
+      setLoading(false);
+      toast.error(error.response.data.message);
+    }
+  };
+
   useEffect(() => {
     const loginStatusGetUser = async () => {
-      const loggedIn = await userLoginStatus();
-      console.log("isLoggedIn", loggedIn);
+      const isLoggedIn = await userLoginStatus();
+      console.log("isLoggedIn", isLoggedIn);
 
-      if (loggedIn) {
-        getUser();
+      if (isLoggedIn) {
+       await getUser();
       }
     };
 
     loginStatusGetUser();
   }, []);
+
+  useEffect(() => {
+    if(user.role === 'admin') {}
+    getAllUsers();
+  }, [user.role]);
 
   return (
     <UserContext.Provider
@@ -285,7 +375,11 @@ export const UserContextProvider = ({ children }) => {
         emailVerification,
         verifyUser,
         forgotPasswordEmail,
+        resetPassword,
         user,
+        changePassword,
+        allUsers,
+        deleteUser,
       }}
     >
       {children}
